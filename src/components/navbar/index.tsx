@@ -7,16 +7,17 @@ import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { FaLinkedin } from "react-icons/fa";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
+import Link from "next/link";
 import Logo from "../../../public/logoipsum-327.svg";
 
 interface NavBarProps {
-  className?: string; // Add className prop
+  className?: string;
 }
 
 const navigation = [
   { name: "Demo", href: "#", current: false },
-  { name: "Log in", href: "#", current: false },
-  { name: "Get Started", href: "#", current: false },
+  { name: "Log in", href: "/sign-in", current: false },
+  { name: "Get Started", href: "/signin", current: false },
 ];
 
 function classNames(...classes: any) {
@@ -27,19 +28,18 @@ const NavBar: React.FC<NavBarProps> = ({ className }) => {
   return (
     <Disclosure
       as="nav"
-      className={`rounded-3xl mx-auto mt-4 max-w-3xl px-6 py-2 font-black ${className}`} // Apply className here
-      style={{ backgroundColor: "#2a2a2a" }}
+      className={`rounded-3xl  mx-auto mt-4 max-w-3xl px-6 py-2 font-black ${className}`}
+      style={{ backgroundColor: "#1b1b1b" }}
     >
       <div className="relative flex h-14 items-center justify-between">
         <div className="flex items-center space-x-2 group">
           <div className="flex items-center space-x-2 hover:bg-white rounded-full p-2 transition-colors duration-300">
             <Image src={Logo} width={30} height={30} alt="Logo" />
-            <a
-              href="#"
-              className="text-white text-xl font-extrabold group-hover:text-gray-800"
-            >
-              Lie2Hire
-            </a>
+            <Link href="/">
+              <span className="text-white text-xl font-extrabold group-hover:text-gray-800">
+                Lie2Hire
+              </span>
+            </Link>
           </div>
         </div>
 
@@ -47,26 +47,26 @@ const NavBar: React.FC<NavBarProps> = ({ className }) => {
           <div className="hidden sm:flex space-x-4">
             <a
               href="https://www.linkedin.com"
-              className="text-gray-300 hover:bg-white  hover:text-gray-800 rounded-full p-2 duration-300"
+              className="text-gray-300 hover:bg-white hover:text-gray-800 rounded-full p-2 duration-300"
             >
               <FaLinkedin size={20} />
             </a>
             <Separator className="w-0.5 h-10 bg-gray-600 mx-4" />
 
             {navigation.map((item) => (
-              <a
-                key={item.name}
-                href={item.href}
-                aria-current={item.current ? "page" : undefined}
-                className={classNames(
-                  item.name === "Get Started"
-                    ? "bg-white text-gray-800 rounded-full px-4 py-2 font-medium"
-                    : "text-gray-300 hover:bg-white hover:text-gray-800 rounded-full px-4 py-2",
-                  "text-sm font-medium"
-                )}
-              >
-                {item.name}
-              </a>
+              <Link key={item.name} href={item.href}>
+                <span
+                  aria-current={item.current ? "page" : undefined}
+                  className={classNames(
+                    item.name === "Get Started"
+                      ? "bg-white text-gray-800 rounded-full px-4 py-2 font-medium text-xl"
+                      : "text-gray-300 hover:bg-white hover:text-gray-800 rounded-full px-4 py-2 text-xl",
+                    "text-sm font-medium"
+                  )}
+                >
+                  {item.name}
+                </span>
+              </Link>
             ))}
           </div>
         </div>
@@ -88,26 +88,26 @@ const NavBar: React.FC<NavBarProps> = ({ className }) => {
           <DisclosureButton
             as="a"
             href="https://www.linkedin.com"
-            className="text-gray-300 hover:bg-white hover:text-gray-800 rounded-full px-3 py-2 flex items-center"
+            className="text-gray-300 hover:bg-white hover:text-gray-800 rounded-full px-3 py-2 flex items-center text-xl"
           >
             <FaLinkedin size={20} />
             <span className="ml-3">LinkedIn</span>
           </DisclosureButton>
 
           {navigation.map((item) => (
-            <DisclosureButton
-              key={item.name}
-              as="a"
-              href={item.href}
-              className={classNames(
-                item.name === "Get Started"
-                  ? "bg-white text-gray-800 rounded-full px-3 py-2 font-medium"
-                  : "text-gray-300 hover:bg-white hover:text-gray-800 rounded-md px-3 py-2 font-medium",
-                "block"
-              )}
-            >
-              {item.name}
-            </DisclosureButton>
+            <Link key={item.name} href={item.href}>
+              <DisclosureButton
+                as="div"
+                className={classNames(
+                  item.name === "Get Started"
+                    ? "bg-white text-gray-800 rounded-full px-3 py-2 font-medium text-xl"
+                    : "text-gray-300 hover:bg-white hover:text-gray-800 rounded-md px-3 py-2 font-medium text-xl",
+                  "block"
+                )}
+              >
+                {item.name}
+              </DisclosureButton>
+            </Link>
           ))}
         </div>
       </DisclosurePanel>
