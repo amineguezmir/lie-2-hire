@@ -4,24 +4,118 @@ import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
+
+GlobalWorkerOptions.workerSrc = "/pdf/pdf.worker.min.js";
 
 const JobDescriptionCard = () => {
   const [firstCardOption, setFirstCardOption] = useState("upload");
   const [secondCardOption, setSecondCardOption] = useState("upload");
   const [fileName, setFileName] = useState("");
-  const fileInputRef1 = useRef(null);
-  const fileInputRef2 = useRef(null);
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [resumeText, setResumeText] = useState("");
+  const fileInputRef1 = useRef<HTMLInputElement | null>(null);
+  const fileInputRef2 = useRef<HTMLInputElement | null>(null);
 
-  const handleFileChange = (e, card) => {
-    const file = e.target.files[0];
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
       setFileName(file.name);
+      setResumeFile(file);
     }
   };
 
-  const triggerFileInput = (ref) => {
-    ref.current.click();
+  const triggerFileInput = (ref: React.RefObject<HTMLInputElement>) => {
+    ref.current?.click();
   };
+
+  const handleParseResume = async () => {
+    if (resumeFile) {
+      const fileReader = new FileReader();
+
+      fileReader.onload = async function () {
+        const result = fileReader.result;
+        if (result) {
+          const typedArray = new Uint8Array(result as ArrayBuffer);
+
+          try {
+            const pdf = await getDocument(typedArray).promise;
+            let textContent = "";
+
+            for (let i = 1; i <= pdf.numPages; i++) {
+              const page = await pdf.getPage(i);
+              const text = await page.getTextContent();
+              text.items.forEach((item: any) => {
+                textContent += item.str + " ";
+              });
+            }
+
+            console.log("Extracted Text:", textContent);
+            setResumeText(textContent);
+          } catch (err) {
+            console.error("Error parsing PDF:", err);
+          }
+        } else {
+          console.error("File reading result is null.");
+        }
+      };
+
+      fileReader.readAsArrayBuffer(resumeFile);
+    } else {
+      alert("Please upload a resume first!");
+    }
+  };
+
+  interface ResumeSections {
+    [key: string]: string[];
+  }
+
+  const formatResumeText = (text: string): ResumeSections => {
+    const sections: ResumeSections = {
+      Languages: [],
+      Experience: [],
+      Education: [],
+      "Technical Skills": [],
+      Certificates: [],
+      "Soft Skills": [],
+    };
+
+    const lines = text.split("\n");
+    let currentSection: string | null = null;
+
+    const sectionHeaders = [
+      "Languages",
+      "Experience",
+      "Education",
+      "Technical Skills",
+      "Certificates",
+      "Soft Skills",
+    ];
+
+    lines.forEach((line) => {
+      const trimmedLine = line.trim();
+      console.log("Processing line:", trimmedLine);
+
+      const isSectionHeader = sectionHeaders.some((header) =>
+        trimmedLine.startsWith(header)
+      );
+
+      if (isSectionHeader) {
+        currentSection =
+          sectionHeaders.find((header) => trimmedLine.startsWith(header)) ||
+          null;
+      } else if (currentSection) {
+        if (trimmedLine) {
+          sections[currentSection].push(trimmedLine);
+        }
+      }
+    });
+
+    console.log("Formatted Resume Sections:", sections);
+    return sections;
+  };
+
+  const formattedResume = formatResumeText(resumeText);
 
   return (
     <div className="w-full p-4">
@@ -51,7 +145,7 @@ const JobDescriptionCard = () => {
                 type="file"
                 accept=".pdf,.docx"
                 className="hidden"
-                onChange={(e) => handleFileChange(e, "first")}
+                onChange={handleFileChange}
                 ref={fileInputRef1}
               />
               <Button
@@ -99,7 +193,7 @@ const JobDescriptionCard = () => {
                 type="file"
                 accept=".pdf,.docx"
                 className="hidden"
-                onChange={(e) => handleFileChange(e, "second")}
+                onChange={handleFileChange}
                 ref={fileInputRef2}
               />
               <Button
@@ -136,11 +230,30 @@ const JobDescriptionCard = () => {
           onMouseLeave={(e) =>
             (e.currentTarget.style.backgroundColor = "#5151cd")
           }
+          onClick={handleParseResume}
         >
           Let's Lie
           <img src="/magic.png" alt="Magic Icon" className="ml-3 w-6 h-6" />
         </Button>
       </div>
+
+      {resumeText && (
+        <div className="mt-4">
+          <h3 className="text-2xl font-bold">Extracted Resume Information</h3>
+          <div className="mt-2">
+            {Object.entries(formattedResume).map(([section, items]) => (
+              <div key={section} className="mb-4">
+                <h4 className="text-xl font-semibold">{section}:</h4>
+                <ul className="list-disc pl-5">
+                  {items.map(
+                    (item, index) => item && <li key={index}>{item}</li>
+                  )}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

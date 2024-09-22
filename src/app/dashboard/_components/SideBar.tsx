@@ -50,12 +50,6 @@ export default function Sidebar() {
     if (currentTab) {
       setActiveTab(currentTab);
     }
-
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = "auto";
-    };
   }, [pathname, menuItems]);
 
   const handleMenuClick = (path: any) => {
