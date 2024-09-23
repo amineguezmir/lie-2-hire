@@ -2,15 +2,13 @@
 
 import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
+import { UploadIcon, ZapIcon } from "lucide-react";
 
 GlobalWorkerOptions.workerSrc = "/pdf/pdf.worker.min.js";
 
-const JobDescriptionCard = () => {
-  const [firstCardOption, setFirstCardOption] = useState("upload");
-  const [secondCardOption, setSecondCardOption] = useState("upload");
+export default function Component() {
   const [fileName, setFileName] = useState("");
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [resumeText, setResumeText] = useState("");
@@ -50,13 +48,10 @@ const JobDescriptionCard = () => {
               });
             }
 
-            console.log("Extracted Text:", textContent);
             setResumeText(textContent);
           } catch (err) {
             console.error("Error parsing PDF:", err);
           }
-        } else {
-          console.error("File reading result is null.");
         }
       };
 
@@ -66,81 +61,22 @@ const JobDescriptionCard = () => {
     }
   };
 
-  interface ResumeSections {
-    [key: string]: string[];
-  }
-
-  const formatResumeText = (text: string): ResumeSections => {
-    const sections: ResumeSections = {
-      Languages: [],
-      Experience: [],
-      Education: [],
-      "Technical Skills": [],
-      Certificates: [],
-      "Soft Skills": [],
-    };
-
-    const lines = text.split("\n");
-    let currentSection: string | null = null;
-
-    const sectionHeaders = [
-      "Languages",
-      "Experience",
-      "Education",
-      "Technical Skills",
-      "Certificates",
-      "Soft Skills",
-    ];
-
-    lines.forEach((line) => {
-      const trimmedLine = line.trim();
-      console.log("Processing line:", trimmedLine);
-
-      const isSectionHeader = sectionHeaders.some((header) =>
-        trimmedLine.startsWith(header)
-      );
-
-      if (isSectionHeader) {
-        currentSection =
-          sectionHeaders.find((header) => trimmedLine.startsWith(header)) ||
-          null;
-      } else if (currentSection) {
-        if (trimmedLine) {
-          sections[currentSection].push(trimmedLine);
-        }
-      }
-    });
-
-    console.log("Formatted Resume Sections:", sections);
-    return sections;
-  };
-
-  const formattedResume = formatResumeText(resumeText);
-
   return (
-    <div className="w-full p-4">
-      <p className="text-3xl font-bold mt-4">
-        What Role are you evaluating for?
-      </p>
-      <Card className="w-full p-4 mt-4">
-        <div className="flex justify-around mb-4">
-          <Button
-            onClick={() => setFirstCardOption("upload")}
-            variant={firstCardOption === "upload" ? "default" : "outline"}
-          >
-            Upload Job Description
-          </Button>
-          <Button
-            onClick={() => setFirstCardOption("paste")}
-            variant={firstCardOption === "paste" ? "default" : "outline"}
-          >
-            Paste Description
-          </Button>
-        </div>
-        {firstCardOption === "upload" && (
-          <div className="mt-4">
-            <p>Upload a job description in PDF or DOCX format.</p>
-            <div className="mt-2">
+    <div className="flex h-screen bg-gray-100">
+      <div className="flex-1 p-8 overflow-auto">
+        <h1 className="text-2xl font-semibold mb-6">
+          What role are you evaluating candidates for?
+        </h1>
+        <div className="bg-white p-6 rounded-lg shadow mb-6">
+          <Tabs defaultValue="upload" className="w-full">
+            <TabsList>
+              <TabsTrigger value="upload">Upload job description</TabsTrigger>
+              <TabsTrigger value="paste">Paste description</TabsTrigger>
+            </TabsList>
+            <TabsContent value="upload">
+              <p className="text-sm text-gray-600 mb-2">
+                Upload a job description in PDF or DOCX format.
+              </p>
               <input
                 type="file"
                 accept=".pdf,.docx"
@@ -149,46 +85,34 @@ const JobDescriptionCard = () => {
                 ref={fileInputRef1}
               />
               <Button
-                className="w-32"
                 variant="outline"
+                size="sm"
                 onClick={() => triggerFileInput(fileInputRef1)}
               >
-                {fileName || "Choose File"}
+                <UploadIcon className="mr-2 h-4 w-4" />
+                {fileName || "Select file"}
               </Button>
-            </div>
-          </div>
-        )}
-        {firstCardOption === "paste" && (
-          <div className="mt-4">
-            <p>Paste your job description below.</p>
-            <Textarea className="w-full mt-2" rows={4} />
-            <Button className="mt-2" variant="outline">
-              Save
-            </Button>
-          </div>
-        )}
-      </Card>
-
-      <p className="text-3xl font-bold mt-8">Who are you?</p>
-      <Card className="w-full p-4 mt-4">
-        <div className="flex justify-around mb-4">
-          <Button
-            onClick={() => setSecondCardOption("upload")}
-            variant={secondCardOption === "upload" ? "default" : "outline"}
-          >
-            Upload Resume
-          </Button>
-          <Button
-            onClick={() => setSecondCardOption("paste")}
-            variant={secondCardOption === "paste" ? "default" : "outline"}
-          >
-            Paste Resume
-          </Button>
+            </TabsContent>
+            <TabsContent value="paste">
+              <textarea
+                className="w-full h-32 p-2 border rounded-md"
+                placeholder="Paste your job description here..."
+              ></textarea>
+            </TabsContent>
+          </Tabs>
         </div>
-        {secondCardOption === "upload" && (
-          <div className="mt-4">
-            <p>Upload up to 10 resumes in PDF or DOCX format.</p>
-            <div className="mt-2">
+
+        <h2 className="text-2xl font-semibold mb-6">Who are you evaluating?</h2>
+        <div className="bg-white p-6 rounded-lg shadow mb-6">
+          <Tabs defaultValue="upload" className="w-full">
+            <TabsList>
+              <TabsTrigger value="upload">Upload resume</TabsTrigger>
+              <TabsTrigger value="paste">Paste resume</TabsTrigger>
+            </TabsList>
+            <TabsContent value="upload">
+              <p className="text-sm text-gray-600 mb-2">
+                Upload up to 10 resumes in PDF or DOCX format.
+              </p>
               <input
                 type="file"
                 accept=".pdf,.docx"
@@ -197,65 +121,37 @@ const JobDescriptionCard = () => {
                 ref={fileInputRef2}
               />
               <Button
-                className="w-32"
                 variant="outline"
+                size="sm"
                 onClick={() => triggerFileInput(fileInputRef2)}
               >
+                <UploadIcon className="mr-2 h-4 w-4" />
                 {fileName || "Add files"}
               </Button>
+            </TabsContent>
+            <TabsContent value="paste">
+              <textarea
+                className="w-full h-32 p-2 border rounded-md"
+                placeholder="Paste the resume content here..."
+              ></textarea>
+            </TabsContent>
+          </Tabs>
+        </div>
+
+        <Button className="w-full" onClick={handleParseResume}>
+          <ZapIcon className="mr-2 h-4 w-4" />
+          Evaluate candidate
+        </Button>
+
+        {resumeText && (
+          <div className="mt-4">
+            <h3 className="text-2xl font-bold">Extracted Resume Information</h3>
+            <div className="mt-2">
+              <p className="text-sm">{resumeText}</p>
             </div>
           </div>
         )}
-        {secondCardOption === "paste" && (
-          <div className="mt-4">
-            <p>Paste resume below.</p>
-            <Textarea className="w-full mt-2" rows={4} />
-            <Button className="mt-2" variant="outline">
-              Save
-            </Button>
-          </div>
-        )}
-      </Card>
-
-      <div className="mt-8">
-        <Button
-          className="flex items-center text-white px-10 py-6 text-2xl"
-          style={{
-            backgroundColor: "#5151cd",
-            transition: "background-color 0.3s",
-          }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.backgroundColor = "#6a6ae0")
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.backgroundColor = "#5151cd")
-          }
-          onClick={handleParseResume}
-        >
-          Let's Lie
-          <img src="/magic.png" alt="Magic Icon" className="ml-3 w-6 h-6" />
-        </Button>
       </div>
-
-      {resumeText && (
-        <div className="mt-4">
-          <h3 className="text-2xl font-bold">Extracted Resume Information</h3>
-          <div className="mt-2">
-            {Object.entries(formattedResume).map(([section, items]) => (
-              <div key={section} className="mb-4">
-                <h4 className="text-xl font-semibold">{section}:</h4>
-                <ul className="list-disc pl-5">
-                  {items.map(
-                    (item, index) => item && <li key={index}>{item}</li>
-                  )}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
-};
-
-export default JobDescriptionCard;
+}
